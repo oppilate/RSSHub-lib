@@ -17,20 +17,32 @@ describe('Setting test instance', () => {
   });
   it(`retrives all routes`, async () => {
     expect.assertions(1);
-    const response = await rsshub.getAllRoutes();
+    const response = await rsshub.getAllRoutes({
+      onlyParameterOptional: false,
+    });
 
     expect(response).toContainEqual(
       new SiteRoutes('12306', ['/12306/zxdt/:id?'])
+    );
+  });
+  it(`retrives parameter optional routes only`, async () => {
+    expect.assertions(2);
+    const response = await rsshub.getAllRoutes({ onlyParameterOptional: true });
+
+    expect(response).toContainEqual(
+      new SiteRoutes('bangumi', ['/bangumi/calendar/today'])
+    );
+    expect(response).not.toContainEqual(
+      new SiteRoutes('ziroom', ['/ziroom/room/:city/:iswhole/:room/:keyword'])
     );
   });
   it(`retrives routes for 12306`, async () => {
     expect.assertions(1);
     const response = await rsshub.getRoutesOf('12306');
 
-    expect(response).toEqual(
-      new SiteRoutes('12306', ['/12306/zxdt/:id?'])
-    );
+    expect(response).toEqual(new SiteRoutes('12306', ['/12306/zxdt/:id?']));
   });
+
   it(`gets feed`, async () => {
     expect.assertions(1);
     const feed = await rsshub.getFeedAt('/rthk-news/hk/international');

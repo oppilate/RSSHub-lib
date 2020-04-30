@@ -1,44 +1,60 @@
 import axios from 'axios';
-import Parser, { Output as Feed } from 'rss-parser';
-import { SiteRoutes, RoutesApiResponse } from './types';
-
+import { Output as Feed } from 'rss-parser';
+import { RoutesApiResponse, SiteRoutes as Site } from './types';
+import { regexpParameterOptionalRoute, rssParser } from './utils';
 export default class RSSHub {
-  parser: { parseURL: (arg0: string) => any };
-  constructor(public domain: string) {
-    this.parser = new Parser();
-  }
-  
+  constructor(public domain: string) {}
 
-  async getAllRoutes(): Promise<SiteRoutes[]> {
+  async getAllRoutes({ onlyParameterOptional = false }): Promise<Site[]> {
     const route = '/api/routes';
     let response: RoutesApiResponse = await (
       await axios.get(route, { baseURL: this.domain })
     ).data;
     let data = response.data;
+    let sites: Site[] = [];
 
-    let routes: SiteRoutes[] = [];
     for (const siteName in data) {
-      let route = new SiteRoutes(siteName, data[siteName].routes);
-      routes.push(route);
+      let site = new Site(siteName, data[siteName].routes);
+
+      if (onlyParameterOptional) {
+        // Exclude those who require parameters
+
+        site.routes = site.routes.filter(this.isParameterOptional);
+      }
+      sites.push(site);
     }
 
-    return routes;
+    if (onlyParameterOptional) {
+      sites = sites.filter(this.hasRoute);
+    }
+
+    return sites;
   }
 
-  async getRoutesOf(siteName: string): Promise<SiteRoutes> {
+  isParameterOptional(route: string): boolean {
+    return regexpParameterOptionalRoute.test(route);
+  }
+
+  hasRoute(site: Site): boolean {
+    return (
+      site.routes != null && site.routes != undefined && site.routes.length > 0
+    );
+  }
+
+  async getRoutesOf(siteName: string): Promise<Site> {
     const route = '/api/routes';
     const response: RoutesApiResponse = await (
       await axios.get(route + '/' + siteName, { baseURL: this.domain })
     ).data;
     const data = response.data;
 
-    return new SiteRoutes(siteName, data[siteName].routes);
+    return new Site(siteName, data[siteName].routes);
   }
 
   async getFeedAt(route: string): Promise<Feed> {
     let endpoint: string = this.domain + route;
     var feed: Feed;
-    feed = await this.parser.parseURL(endpoint);
+    feed = await rssParser.parseURL(endpoint);
 
     return feed;
   }
