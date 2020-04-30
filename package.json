@@ -44,7 +44,6 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "fast-feed": "^1.7.0",
     "rss-parser": "^3.7.6"
   }
 }
