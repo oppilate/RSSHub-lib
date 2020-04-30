@@ -1,0 +1,7 @@
+{
+    "prettier.packageManager": "yarn",
+    "eslint.format.enable": true,
+    "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+    "typescript.format.insertSpaceAfterConstructor": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+}
